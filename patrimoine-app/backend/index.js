@@ -76,10 +76,17 @@ app.post('/possession', (req, res) => {
 // Route pour mettre à jour la date de fin d'une possession
 app.put('/possession/:libelle', (req, res) => {
   const { libelle } = req.params;
-  const { dateFin } = req.body;
+  const { libelle: newLibelle, dateFin } = req.body;
+
   const possession = possessions.find(p => p.libelle === libelle);
+
   if (possession) {
-    possession.dateFin = dateFin;
+    if (newLibelle) {
+      possession.libelle = newLibelle;
+    }
+    if (dateFin) {
+      possession.dateFin = dateFin;
+    }
 
     // Mettre à jour le fichier data.json
     fs.writeFile('./data.json', JSON.stringify(patrimoine, null, 2), (err) => {
@@ -143,18 +150,16 @@ app.post('/patrimoine/evolution', (req, res) => {
   const evolution = [];
   let currentDate = new Date(debut);
 
-  const incrementDate = type === 'annuel' 
+  const incrementDate = type === 'annuel'
     ? date => date.setFullYear(date.getFullYear() + 1)
     : date => date.setMonth(date.getMonth() + 1);
 
-  const totalPossessions = possessions.length;
-
   while (currentDate <= fin) {
     let valeurTotale = 0;
-    for (let i = 0; i < totalPossessions; i++) {
-      valeurTotale += calculateValeurActuelle(possessions[i], currentDate);
-    }
-    
+    possessions.forEach(possession => {
+      valeurTotale += calculateValeurActuelle(possession, currentDate);
+    });
+
     evolution.push({
       date: currentDate.toISOString().split('T')[0],
       valeurTotale

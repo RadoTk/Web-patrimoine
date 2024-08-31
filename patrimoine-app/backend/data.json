@@ -20,7 +20,7 @@
           "type": "BienMateriel",
           "valeur": 4000000,
           "dateDebut": "2023-12-25T00:00:00.000Z",
-          "dateFin": "2024-08-31T05:07:25.136Z",
+          "dateFin": "2024-09-05",
           "tauxAmortissement": 5
         },
         {
@@ -51,27 +51,11 @@
         },
         {
           "libelle": "Montre",
-          "valeur": 1000,
-          "dateDebut": "2023-08-30",
+          "valeur": 1000000,
+          "dateDebut": "2024-08-31",
           "tauxAmortissement": 0,
           "type": "BienMateriel",
-          "valeurActuelle": 1000
-        },
-        {
-          "libelle": "Moto",
-          "valeur": 1000,
-          "dateDebut": "2023-08-31",
-          "tauxAmortissement": 50,
-          "type": "BienMateriel",
-          "valeurActuelle": 498.35675221968546
-        },
-        {
-          "libelle": "Balite",
-          "valeur": 1000000000,
-          "dateDebut": "2024-08-31",
-          "tauxAmortissement": 50,
-          "type": "BienMateriel",
-          "valeurActuelle": 999707163.3847032
+          "valeurActuelle": 1000000
         }
       ]
     }
