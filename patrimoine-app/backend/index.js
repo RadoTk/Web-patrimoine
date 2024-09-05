@@ -1,60 +1,71 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const fs = require('fs');
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
 
-let patrimoine = require('./data.json');  // Assurez-vous que data.json est bien au bon emplacement
-let possessions = patrimoine.find(p => p.model === "Patrimoine").data.possessions;
+const patrimoine = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
+const possessions = patrimoine.find(p => p.model === "Patrimoine").data.possessions;
 
-// Fonction pour calculer la valeur actuelle d'une possession
-const calculateValeurActuelle = (possession, date) => {
-  const now = date || new Date();
-  switch (possession.type) {
-    case 'BienMateriel':
-      return calculateValeurBienMateriel(possession, now);
-    case 'Flux':
-      return calculateValeurFlux(possession, now);
-    case 'Argent':
-      return possession.valeur; // Valeur actuelle pour Argent est sa valeur initiale
-    default:
-      return 0;
-  }
-};
+// Import the necessary classes
+import Personne from '../src/models/Personne.js';
+import Patrimoine from '../src/models/Patrimoine.js';
+import Possession from '../src/models/Possession.js';
+import Flux from '../src/models/Flux.js';
+import BienMateriel from '../src/models/BienMateriel.js';
+import Argent from '../src/models/Argent.js';
+// Create instances of possessions
+const createPossessions = () => {
+  const johnDoe = new Personne(patrimoine[0].data.nom);
+  return possessions.map(item => {
+    const dateDebut = new Date(item.dateDebut);
+    const dateFin = item.dateFin ? new Date(item.dateFin) : null;
 
-const calculateValeurBienMateriel = (possession, date) => {
-  const dateDebut = new Date(possession.dateDebut);
-  const tauxAmortissement = possession.tauxAmortissement || 0;
-  if (date < dateDebut) return possession.valeur;
-  const differenceDate = (date - dateDebut) / (1000 * 60 * 60 * 24 * 365); // En années
-  return possession.valeur - (possession.valeur * (differenceDate * tauxAmortissement / 100));
-};
-
-const calculateValeurFlux = (possession, date) => {
-  const nombreDeMois = (debut, dateEvaluation, jourJ) => {
-    let compteur = 0;
-    if (debut.getDate() < jourJ) {
-      compteur++;
+    if (item.jour !== undefined && item.valeurConstante !== undefined) {
+      return new Flux(johnDoe, item.libelle, item.valeur, dateDebut, dateFin, item.tauxAmortissement, item.jour, item.valeurConstante);
+    } else if (item.libelle === "Compte épargne") {
+      return new Argent(johnDoe, item.libelle, item.valeur, dateDebut, dateFin, item.tauxAmortissement, "Epargne");
+    } else {
+      return new BienMateriel(johnDoe, item.libelle, item.valeur, dateDebut, dateFin, item.tauxAmortissement);
     }
-    if (dateEvaluation.getDate() >= jourJ &&
-        !(debut.getFullYear() === dateEvaluation.getFullYear() &&
-        debut.getMonth() === dateEvaluation.getMonth())) {
-      compteur++;
-    }
-    let totalMois = (dateEvaluation.getFullYear() - debut.getFullYear()) * 12 +
-                     (dateEvaluation.getMonth() - debut.getMonth()) - 1;
-    compteur += Math.max(0, totalMois);
-    return compteur;
-  };
-  return possession.valeurConstante * nombreDeMois(new Date(possession.dateDebut), date, possession.jour);
+  });
 };
 
-// Route pour obtenir toutes les possessions
+const possessionInstances = createPossessions();
+
+// Modify the existing routes to use the new calculation methods
+
 app.get('/possession', (req, res) => {
-  res.json(possessions);
+  const currentDate = new Date();
+  const possessionsWithCurrentValue = possessionInstances.map(p => ({
+    ...p,
+    valeurActuelle: p.getValeur(currentDate)
+  }));
+  res.json(possessionsWithCurrentValue);
+});
+
+app.get('/patrimoine/:date', (req, res) => {
+  const { date } = req.params;
+  const selectedDate = new Date(date);
+
+  if (isNaN(selectedDate.getTime())) {
+    return res.status(400).json({ error: 'Date invalide' });
+  }
+
+  const johnDoe = new Personne(patrimoine[0].data.nom);
+  const patrimoineInstance = new Patrimoine(johnDoe, possessionInstances);
+  const valeurTotale = patrimoineInstance.getValeur(selectedDate);
+
+  res.json({ valeurTotale });
 });
 
 // Route pour ajouter une nouvelle possession
@@ -119,22 +130,6 @@ app.put('/possession/:libelle/close', (req, res) => {
   } else {
     res.status(404).json({ error: 'Possession non trouvée' });
   }
-});
-
-// Route pour obtenir la valeur totale du patrimoine à une date spécifique
-app.get('/patrimoine/:date', (req, res) => {
-  const { date } = req.params;
-  const selectedDate = new Date(date);
-
-  if (isNaN(selectedDate.getTime())) {
-    return res.status(400).json({ error: 'Date invalide' });
-  }
-
-  const valeurTotale = possessions.reduce((total, possession) => {
-    return total + calculateValeurActuelle(possession, selectedDate);
-  }, 0);
-
-  res.json({ valeurTotale });
 });
 
 app.post('/patrimoine/evolution', (req, res) => {
