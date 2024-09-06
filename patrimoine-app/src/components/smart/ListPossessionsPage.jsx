@@ -8,6 +8,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import PossessionTable from '../dumb/PossessionTable';
 import ErrorMessage from '../dumb/ErrorMessage';
+import { useLocation } from 'react-router-dom';
 
 // Fonction pour créer une instance de la possession en fonction du type
 const createPossessionInstance = (possession) => {
@@ -47,15 +48,13 @@ const createPossessionInstance = (possession) => {
   }
 };
 
-import { useLocation } from 'react-router-dom';
-
 const ListPossessionsPage = () => {
   const [possessions, setPossessions] = useState([]);
   const [error, setError] = useState('');
   const location = useLocation();
 
   const fetchPossessions = () => {
-    axios.get('http://localhost:5000/possession')
+    axios.get('https://web-patrimoine-backend.onrender.com/possession')
       .then(response => {
         setPossessions(response.data);
       })
@@ -70,7 +69,7 @@ const ListPossessionsPage = () => {
   }, [location.state]);
 
   const closePossession = (libelle) => {
-    axios.put(`http://localhost:5000/possession/${libelle}/close`)
+    axios.put(`https://web-patrimoine-backend.onrender.com/possession/${libelle}/close`)
       .then(() => {
         setPossessions(possessions.map(p =>
           p.libelle === libelle ? { ...p, dateFin: new Date().toISOString() } : p
@@ -98,6 +97,6 @@ const ListPossessionsPage = () => {
       </div>
     </Container>
   );
-
 };
+
 export default ListPossessionsPage;

@@ -20,9 +20,12 @@ const CreatePossessionPage = () => {
       tauxAmortissement: parseFloat(taux),
       type 
     };
-    axios.post('http://localhost:5000/possession', newPossession)
+    axios.post('https://web-patrimoine-backend.onrender.com/possession', newPossession)
       .then(() => navigate('/possessions'))
-      .catch(error => console.error('Error creating possession:', error));
+      .catch(error => {
+        console.error('Error creating possession:', error);
+        alert('Une erreur est survenue lors de la création de la possession.');
+      });
   };
 
   return (

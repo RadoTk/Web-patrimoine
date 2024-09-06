@@ -37,34 +37,35 @@ const PatrimoinePage = () => {
   const handleTypeChange = (event) => {
     setType(event.target.value);
   };
+
   const handleCalculate = async () => {
     if (!dateDebut || !dateFin || !dateCalcul) {
       setError('Veuillez sélectionner toutes les dates.');
       return;
     }
-  
+
     try {
       // Calculer la valeur du patrimoine à la date de calcul
-      const responseValeur = await axios.get(`http://localhost:5000/patrimoine/${dateCalcul.toISOString().split('T')[0]}`);
-  
+      const responseValeur = await axios.get(`https://web-patrimoine-backend.onrender.com/patrimoine/${dateCalcul.toISOString().split('T')[0]}`);
+
       if (responseValeur.data && typeof responseValeur.data.valeurTotale === 'number') {
         setValeurPatrimoine(responseValeur.data.valeurTotale);
       } else {
         throw new Error('Réponse invalide du serveur');
       }
-  
+
       // Calculer l'évolution du patrimoine entre dateDebut et dateFin
-      const responseEvolution = await axios.post(`http://localhost:5000/patrimoine/evolution`, {
+      const responseEvolution = await axios.post(`https://web-patrimoine-backend.onrender.com/patrimoine/evolution`, {
         dateDebut: dateDebut.toISOString().split('T')[0],
         dateFin: dateFin.toISOString().split('T')[0],
         type,
         jour
       });
-  
+
       if (responseEvolution.data && Array.isArray(responseEvolution.data)) {
         const labels = responseEvolution.data.map(item => item.date);
         const data = responseEvolution.data.map(item => item.valeurTotale);
-  
+
         setDataChart({
           labels,
           datasets: [{
@@ -77,15 +78,14 @@ const PatrimoinePage = () => {
       } else {
         throw new Error('Réponse invalide du serveur');
       }
-  
+
       setError('');
     } catch (error) {
       console.error('Erreur lors de la récupération des données du patrimoine', error);
       setError('Erreur lors du calcul du patrimoine.');
     }
   };
-  
-  
+
   return (
     <Container fluid className="py-5 bg-light">
       <Row className="justify-content-center">
