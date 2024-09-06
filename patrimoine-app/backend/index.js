@@ -13,6 +13,14 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// Ignorer les requêtes pour le favicon
+app.use((req, res, next) => {
+  if (req.url === '/favicon.ico') {
+    return res.status(204).end(); // Ignorer les requêtes pour le favicon
+  }
+  next();
+});
+
 const patrimoine = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
 let possessions = patrimoine.find(p => p.model === "Patrimoine").data.possessions;
 
@@ -39,6 +47,11 @@ const createPossessions = () => {
 };
 
 const possessionInstances = createPossessions();
+
+// Endpoint GET /
+app.get('/', (req, res) => {
+  res.send('Bienvenue sur la page d\'accueil !'); // Réponse simple pour GET /
+});
 
 app.get('/possession', (req, res) => {
   const currentDate = new Date();
@@ -94,6 +107,7 @@ app.post('/possession', (req, res) => {
     res.status(201).json({ ...newPossession, valeurActuelle });
   });
 });
+
 app.put('/possession/:libelle', (req, res) => {
   const { libelle } = req.params;
   const { libelle: newLibelle, dateFin } = req.body;
@@ -113,7 +127,7 @@ app.put('/possession/:libelle', (req, res) => {
         console.error('Erreur lors de l\'écriture dans le fichier data.json:', err);
         return res.status(500).json({ error: 'Erreur lors de la mise à jour de la possession' });
       }
-      // Update the possessionInstances array
+      // Mettre à jour le tableau possessionInstances
       const index = possessionInstances.findIndex(p => p.libelle === libelle);
       if (index !== -1) {
         possessionInstances[index].libelle = newLibelle;
@@ -125,6 +139,7 @@ app.put('/possession/:libelle', (req, res) => {
     res.status(404).json({ error: 'Possession non trouvée' });
   }
 });
+
 app.put('/possession/:libelle/close', (req, res) => {
   const { libelle } = req.params;
   const possession = possessions.find(p => p.libelle === libelle);
