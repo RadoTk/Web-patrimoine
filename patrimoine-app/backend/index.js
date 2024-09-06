@@ -10,7 +10,11 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
-app.use(cors());
+// Configuration CORS pour autoriser uniquement les requêtes depuis https://web-patrimoine.onrender.com
+app.use(cors({
+  origin: 'https://web-patrimoine.onrender.com'
+}));
+
 app.use(bodyParser.json());
 
 // Ignorer les requêtes pour le favicon
