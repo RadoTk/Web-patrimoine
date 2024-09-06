@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import BienMateriel from '../../models/BienMateriel';
 import Flux from '../../models/Flux';
@@ -47,15 +47,13 @@ const createPossessionInstance = (possession) => {
   }
 };
 
-import { useLocation } from 'react-router-dom';
-
 const ListPossessionsPage = () => {
   const [possessions, setPossessions] = useState([]);
   const [error, setError] = useState('');
   const location = useLocation();
 
   const fetchPossessions = () => {
-    axios.get('http://localhost:5000/possession')
+    axios.get(`${process.env.REACT_APP_BACKEND_URL}/possession`)
       .then(response => {
         setPossessions(response.data);
       })
@@ -70,7 +68,7 @@ const ListPossessionsPage = () => {
   }, [location.state]);
 
   const closePossession = (libelle) => {
-    axios.put(`http://localhost:5000/possession/${libelle}/close`)
+    axios.put(`${process.env.REACT_APP_BACKEND_URL}/possession/${libelle}/close`)
       .then(() => {
         setPossessions(possessions.map(p =>
           p.libelle === libelle ? { ...p, dateFin: new Date().toISOString() } : p
@@ -98,6 +96,6 @@ const ListPossessionsPage = () => {
       </div>
     </Container>
   );
-
 };
+
 export default ListPossessionsPage;

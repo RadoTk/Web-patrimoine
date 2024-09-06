@@ -45,7 +45,7 @@ const PatrimoinePage = () => {
   
     try {
       // Calculer la valeur du patrimoine à la date de calcul
-      const responseValeur = await axios.get(`http://localhost:5000/patrimoine/${dateCalcul.toISOString().split('T')[0]}`);
+      const responseValeur = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/patrimoine/${dateCalcul.toISOString().split('T')[0]}`);
   
       if (responseValeur.data && typeof responseValeur.data.valeurTotale === 'number') {
         setValeurPatrimoine(responseValeur.data.valeurTotale);
@@ -54,7 +54,7 @@ const PatrimoinePage = () => {
       }
   
       // Calculer l'évolution du patrimoine entre dateDebut et dateFin
-      const responseEvolution = await axios.post(`http://localhost:5000/patrimoine/evolution`, {
+      const responseEvolution = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/patrimoine/evolution`, {
         dateDebut: dateDebut.toISOString().split('T')[0],
         dateFin: dateFin.toISOString().split('T')[0],
         type,
