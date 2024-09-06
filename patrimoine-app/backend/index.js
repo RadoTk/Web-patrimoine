@@ -53,6 +53,14 @@ const createPossessions = () => {
   });
 };
 
+app.get('/', (req, res) => {
+  res.send('Welcome to the API');
+});
+
+
+app.get('/favicon.ico', (req, res) => res.status(204));
+
+
 const possessionInstances = createPossessions();
 
 app.get('/possession', (req, res) => {
