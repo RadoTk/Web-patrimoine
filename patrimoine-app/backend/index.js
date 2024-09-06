@@ -13,7 +13,22 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const patrimoine = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
+
+const allowedOrigins = ['https://web-patrimoine.onrender.com']; // Mettez ici l'URL exacte du front déployé
+
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
+const patrimoine = JSON.parse(fs.readFileSync(`${__dirname}/data.json`, 'utf8'));
+
 let possessions = patrimoine.find(p => p.model === "Patrimoine").data.possessions;
 
 import Personne from '../src/models/Personne.js';
@@ -179,18 +194,6 @@ app.post('/patrimoine/evolution', (req, res) => {
   res.json(evolution);
 });
 
-const allowedOrigins = ['https://web-patrimoine.onrender.com/'];
-
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
