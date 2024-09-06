@@ -177,6 +177,20 @@ app.post('/patrimoine/evolution', (req, res) => {
   res.json(evolution);
 });
 
+import cors from 'cors';
+
+const allowedOrigins = ['https://web-patrimoine.onrender.com/'];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
