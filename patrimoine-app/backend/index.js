@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import cors from 'cors';
+import cors from 'cors';  // Conserve cette ligne
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -94,6 +94,7 @@ app.post('/possession', (req, res) => {
     res.status(201).json({ ...newPossession, valeurActuelle });
   });
 });
+
 app.put('/possession/:libelle', (req, res) => {
   const { libelle } = req.params;
   const { libelle: newLibelle, dateFin } = req.body;
@@ -125,6 +126,7 @@ app.put('/possession/:libelle', (req, res) => {
     res.status(404).json({ error: 'Possession non trouvée' });
   }
 });
+
 app.put('/possession/:libelle/close', (req, res) => {
   const { libelle } = req.params;
   const possession = possessions.find(p => p.libelle === libelle);
@@ -177,8 +179,6 @@ app.post('/patrimoine/evolution', (req, res) => {
   res.json(evolution);
 });
 
-import cors from 'cors';
-
 const allowedOrigins = ['https://web-patrimoine.onrender.com/'];
 
 app.use(cors({
@@ -191,6 +191,7 @@ app.use(cors({
   },
   credentials: true
 }));
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
