@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import PossessionForm from '../dumb/PossessionForm';
+import PossessionForm from '../dumb/PossessionForm'; // Import du composant muet
 
 const CreatePossessionPage = () => {
   const [libelle, setLibelle] = useState('');
@@ -20,7 +20,7 @@ const CreatePossessionPage = () => {
       tauxAmortissement: parseFloat(taux),
       type 
     };
-    axios.post(`${process.env.REACT_APP_BACKEND_URL}/possession`, newPossession)
+    axios.post('http://localhost:5000/possession', newPossession)
       .then(() => navigate('/possessions'))
       .catch(error => console.error('Error creating possession:', error));
   };

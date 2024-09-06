@@ -9,12 +9,12 @@
     const navigate = useNavigate();
 
     useEffect(() => {
-      axios.get(`${process.env.REACT_APP_BACKEND_URL}/possession`)
+      axios.get(`http://localhost:5000/possession`)
         .then(response => {
           const possession = response.data.find(p => p.libelle === libelle);
           if (possession) {
-            setNewLibelle(possession.libelle || '');
-            setDateFin(possession.dateFin || '');
+            setNewLibelle(possession.libelle || ''); // Initialiser avec le libelle actuel
+            setDateFin(possession.dateFin || ''); // Initialiser avec la dateFin actuelle
           }
         })
         .catch(error => console.error('Error fetching possession:', error));
@@ -22,7 +22,7 @@
 
     const handleSubmit = (e) => {
       e.preventDefault();
-      axios.put(`${process.env.REACT_APP_BACKEND_URL}/possession/${libelle}`, { libelle: newLibelle, dateFin })
+      axios.put(`http://localhost:5000/possession/${libelle}`, { libelle: newLibelle, dateFin })
         .then(() => navigate('/possessions'))
         .catch(error => console.error('Error updating possession:', error));
     };

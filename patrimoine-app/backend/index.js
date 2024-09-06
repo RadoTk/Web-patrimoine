@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import cors from 'cors';  // Conserve cette ligne
+import cors from 'cors';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -13,22 +13,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-
-const allowedOrigins = ['https://web-patrimoine.onrender.com']; // Mettez ici l'URL exacte du front déployé
-
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
-
-const patrimoine = JSON.parse(fs.readFileSync(`${__dirname}/data.json`, 'utf8'));
-
+const patrimoine = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
 let possessions = patrimoine.find(p => p.model === "Patrimoine").data.possessions;
 
 import Personne from '../src/models/Personne.js';
@@ -52,14 +37,6 @@ const createPossessions = () => {
     }
   });
 };
-
-app.get('/', (req, res) => {
-  res.send('Welcome to the API');
-});
-
-
-app.get('/favicon.ico', (req, res) => res.status(204));
-
 
 const possessionInstances = createPossessions();
 
@@ -117,7 +94,6 @@ app.post('/possession', (req, res) => {
     res.status(201).json({ ...newPossession, valeurActuelle });
   });
 });
-
 app.put('/possession/:libelle', (req, res) => {
   const { libelle } = req.params;
   const { libelle: newLibelle, dateFin } = req.body;
@@ -149,7 +125,6 @@ app.put('/possession/:libelle', (req, res) => {
     res.status(404).json({ error: 'Possession non trouvée' });
   }
 });
-
 app.put('/possession/:libelle/close', (req, res) => {
   const { libelle } = req.params;
   const possession = possessions.find(p => p.libelle === libelle);
@@ -202,8 +177,7 @@ app.post('/patrimoine/evolution', (req, res) => {
   res.json(evolution);
 });
 
-
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
