@@ -1,5 +1,6 @@
 import React from 'react';
 import { Container, Row, Col, Button, Card } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 const HomePage = () => {
   return (
@@ -42,9 +43,9 @@ const HomePage = () => {
               <Card.Body className="d-flex flex-column">
                 <Card.Title className="h4 mb-4">{card.title}</Card.Title>
                 <Card.Text className="flex-grow-1">{card.text}</Card.Text>
-                <Button variant={card.buttonVariant} href={card.href} className="mt-auto">
+                <Link to={card.href} className="btn btn-${card.buttonVariant} mt-auto">
                   {card.buttonText}
-                </Button>
+                </Link>
               </Card.Body>
             </Card>
           </Col>
