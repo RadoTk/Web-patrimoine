@@ -75,6 +75,15 @@
           "dateDebut": "2022-12-29T00:00:00.000Z",
           "dateFin": null,
           "tauxAmortissement": 15
+        },
+        {
+          "type": "BienMateriel",
+          "libelle": "Ordinateur Portable",
+          "valeur": 1000,
+          "dateDebut": "2023-01-01",
+          "tauxAmortissement": 10,
+          "valeurActuelle": 831.9634703196347,
+          "dateFin": "2024-12-31"
         }
       ]
     }
