@@ -196,12 +196,6 @@ app.post('/patrimoine/evolution', (req, res) => {
   res.json(evolution);
 });
 
-
-app.get('*', (req, res) => {
-  res.sendFile(resolve('/home/radokely/Pictures/Web-patrimoine/patrimoine-app/index.html'));
-});
-
-
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
