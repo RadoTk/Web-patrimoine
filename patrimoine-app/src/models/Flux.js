@@ -1,5 +1,5 @@
-import Possession from "./Possession.js";
 
+import Possession from "./Possession.js";
 export default class Flux extends Possession {
   constructor(possesseur, libelle, valeur, dateDebut, dateFin, tauxAmortissement, jour, valeurConstante) {
     super(possesseur, libelle, valeur, dateDebut, dateFin, tauxAmortissement);
@@ -8,6 +8,10 @@ export default class Flux extends Possession {
   }
 
   getValeur(date) {
+    if (date < this.dateDebut) {
+      return 0;
+    }
+  
     const nombreDeMois = (debut, dateEvaluation, jourJ) => {
       let compteur = 0;
 
@@ -22,7 +26,7 @@ export default class Flux extends Possession {
       }
 
       let totalMois = (dateEvaluation.getFullYear() - debut.getFullYear()) * 12 +
-                       (dateEvaluation.getMonth() - debut.getMonth()) - 1;
+                     (dateEvaluation.getMonth() - debut.getMonth()) - 1;
 
       compteur += Math.max(0, totalMois);
 
@@ -30,5 +34,4 @@ export default class Flux extends Possession {
     };
 
     return this.valeurConstante * nombreDeMois(this.dateDebut, date, this.jour);
-  }
-}
+  }}

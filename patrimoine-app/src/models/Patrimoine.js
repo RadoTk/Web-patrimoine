@@ -4,10 +4,14 @@ export default class Patrimoine {
       this.possessions = [...possessions]; // [Possession, Possession, ...]
     }
     getValeur(date) {
+      console.log(`Calcul de la valeur totale du patrimoine à la date ${date}`);
       let result = 0;
       for (const item of this.possessions) {
-        result += item.getValeur(date);
+        const valeurItem = item.getValeur(date);
+        console.log(`Valeur de ${item.libelle}: ${valeurItem}`);
+        result += valeurItem;
       }
+      console.log(`Valeur totale du patrimoine: ${result}`);
       return result;
     }
     addPossession(possession) {

@@ -11,6 +11,7 @@ ChartJS.register(LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend
 const PatrimoinePage = () => {
   const [dateDebut, setDateDebut] = useState(null);
   const [dateFin, setDateFin] = useState(null);
+  const [dateCalcul, setDateCalcul] = useState(null);
   const [jour, setJour] = useState('01');
   const [valeurPatrimoine, setValeurPatrimoine] = useState(null);
   const [error, setError] = useState('');
@@ -25,6 +26,10 @@ const PatrimoinePage = () => {
     setDateFin(date);
   };
 
+  const handleDateCalculChange = (date) => {
+    setDateCalcul(date);
+  };
+
   const handleJourChange = (event) => {
     setJour(event.target.value);
   };
@@ -32,70 +37,54 @@ const PatrimoinePage = () => {
   const handleTypeChange = (event) => {
     setType(event.target.value);
   };
-
   const handleCalculate = async () => {
-    if (!dateDebut || !dateFin) {
-      setError('Veuillez sélectionner les deux dates.');
+    if (!dateDebut || !dateFin || !dateCalcul) {
+      setError('Veuillez sélectionner toutes les dates.');
       return;
     }
   
     try {
-      const labels = [];
-      const data = [];
+      // Calculer la valeur du patrimoine à la date de calcul
+      const responseValeur = await axios.get(`http://localhost:5000/patrimoine/${dateCalcul.toISOString().split('T')[0]}`);
   
-      let currentDate = new Date(dateDebut);
-      const endDate = new Date(dateFin);
-  
-      const uniqueDates = new Set();
-  
-      while (currentDate <= endDate) {
-        const formattedDate = currentDate.toISOString().split('T')[0];
-        
-        if (!uniqueDates.has(formattedDate)) {
-          uniqueDates.add(formattedDate);
-          
-          const response = await axios.post(`http://localhost:5000/patrimoine/evolution`, {
-            dateDebut: formattedDate,
-            dateFin: endDate.toISOString().split('T')[0],
-            type,
-            jour
-          });
-  
-          if (response.data && Array.isArray(response.data)) {
-            response.data.forEach(item => {
-              if (!labels.includes(item.date)) {
-                labels.push(item.date);
-                data.push(item.valeurTotale);
-              }
-            });
-          } else {
-            throw new Error('Réponse invalide du serveur');
-          }
-        }
-  
-        if (type === 'month') {
-          currentDate.setMonth(currentDate.getMonth() + 1);
-        } else {
-        }
+      if (responseValeur.data && typeof responseValeur.data.valeurTotale === 'number') {
+        setValeurPatrimoine(responseValeur.data.valeurTotale);
+      } else {
+        throw new Error('Réponse invalide du serveur');
       }
   
-      setDataChart({
-        labels,
-        datasets: [{
-          label: 'Valeur du Patrimoine',
-          data,
-          borderColor: 'rgba(75,192,192,1)',
-          backgroundColor: 'rgba(75,192,192,0.2)',
-        }]
+      // Calculer l'évolution du patrimoine entre dateDebut et dateFin
+      const responseEvolution = await axios.post(`http://localhost:5000/patrimoine/evolution`, {
+        dateDebut: dateDebut.toISOString().split('T')[0],
+        dateFin: dateFin.toISOString().split('T')[0],
+        type,
+        jour
       });
   
-      setValeurPatrimoine(data[data.length - 1]);
+      if (responseEvolution.data && Array.isArray(responseEvolution.data)) {
+        const labels = responseEvolution.data.map(item => item.date);
+        const data = responseEvolution.data.map(item => item.valeurTotale);
+  
+        setDataChart({
+          labels,
+          datasets: [{
+            label: 'Valeur du Patrimoine',
+            data,
+            borderColor: 'rgba(75,192,192,1)',
+            backgroundColor: 'rgba(75,192,192,0.2)',
+          }]
+        });
+      } else {
+        throw new Error('Réponse invalide du serveur');
+      }
+  
       setError('');
     } catch (error) {
-      console.error('Erreur lors de la récupération de la valeur du patrimoine', error);
-      setError('Erreur lors du calcul de la valeur du patrimoine.');
+      console.error('Erreur lors de la récupération des données du patrimoine', error);
+      setError('Erreur lors du calcul du patrimoine.');
     }
   };
+  
   
   return (
     <Container fluid className="py-5 bg-light">
@@ -128,6 +117,17 @@ const PatrimoinePage = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
+                  <Form.Label>Date de Calcul</Form.Label>
+                  <DatePicker
+                    selected={dateCalcul}
+                    onChange={handleDateCalculChange}
+                    dateFormat="yyyy-MM-dd"
+                    placeholderText="Sélectionner une date de calcul"
+                    className="form-control"
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
                   <Form.Label>Jour</Form.Label>
                   <Form.Select value={jour} onChange={handleJourChange}>
                     <option value="01">1er</option>
@@ -151,11 +151,11 @@ const PatrimoinePage = () => {
 
           {error && <Alert variant="danger" className="mt-3">{error}</Alert>}
 
-          {valeurPatrimoine && (
+          {valeurPatrimoine !== null && (
             <Card className="mt-4 shadow-sm">
               <Card.Body>
                 <h5 className="text-center mb-3">Résultat</h5>
-                <p className="text-center">Valeur du Patrimoine: <strong>{valeurPatrimoine} EUR</strong></p>
+                <p className="text-center">Valeur du Patrimoine à la date de calcul: <strong>{valeurPatrimoine} Ar</strong></p>
               </Card.Body>
             </Card>
           )}

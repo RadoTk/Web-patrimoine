@@ -14,16 +14,14 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const patrimoine = JSON.parse(fs.readFileSync('./data.json', 'utf8'));
-const possessions = patrimoine.find(p => p.model === "Patrimoine").data.possessions;
+let possessions = patrimoine.find(p => p.model === "Patrimoine").data.possessions;
 
-// Import the necessary classes
 import Personne from '../src/models/Personne.js';
 import Patrimoine from '../src/models/Patrimoine.js';
-import Possession from '../src/models/Possession.js';
 import Flux from '../src/models/Flux.js';
 import BienMateriel from '../src/models/BienMateriel.js';
 import Argent from '../src/models/Argent.js';
-// Create instances of possessions
+
 const createPossessions = () => {
   const johnDoe = new Personne(patrimoine[0].data.nom);
   return possessions.map(item => {
@@ -41,8 +39,6 @@ const createPossessions = () => {
 };
 
 const possessionInstances = createPossessions();
-
-// Modify the existing routes to use the new calculation methods
 
 app.get('/possession', (req, res) => {
   const currentDate = new Date();
@@ -65,16 +61,31 @@ app.get('/patrimoine/:date', (req, res) => {
   const patrimoineInstance = new Patrimoine(johnDoe, possessionInstances);
   const valeurTotale = patrimoineInstance.getValeur(selectedDate);
 
+  console.log(`Valeur totale du patrimoine calculée: ${valeurTotale}`);
   res.json({ valeurTotale });
 });
 
-// Route pour ajouter une nouvelle possession
 app.post('/possession', (req, res) => {
   const newPossession = req.body;
-  const valeurActuelle = calculateValeurActuelle(newPossession, new Date());
+  const currentDate = new Date();
+  const johnDoe = new Personne(patrimoine[0].data.nom);
+  let possessionInstance;
+
+  switch (newPossession.type) {
+    case 'Flux':
+      possessionInstance = new Flux(johnDoe, newPossession.libelle, newPossession.valeur, new Date(newPossession.dateDebut), null, newPossession.tauxAmortissement, newPossession.jour, newPossession.valeurConstante);
+      break;
+    case 'Argent':
+      possessionInstance = new Argent(johnDoe, newPossession.libelle, newPossession.valeur, new Date(newPossession.dateDebut), null, newPossession.tauxAmortissement, newPossession.type);
+      break;
+    default:
+      possessionInstance = new BienMateriel(johnDoe, newPossession.libelle, newPossession.valeur, new Date(newPossession.dateDebut), null, newPossession.tauxAmortissement);
+  }
+
+  const valeurActuelle = possessionInstance.getValeur(currentDate);
   possessions.push({ ...newPossession, valeurActuelle });
-  
-  // Mettre à jour le fichier data.json
+  possessionInstances.push(possessionInstance);
+
   fs.writeFile('./data.json', JSON.stringify(patrimoine, null, 2), (err) => {
     if (err) {
       console.error('Erreur lors de l\'écriture dans le fichier data.json:', err);
@@ -83,8 +94,6 @@ app.post('/possession', (req, res) => {
     res.status(201).json({ ...newPossession, valeurActuelle });
   });
 });
-
-// Route pour mettre à jour la date de fin d'une possession
 app.put('/possession/:libelle', (req, res) => {
   const { libelle } = req.params;
   const { libelle: newLibelle, dateFin } = req.body;
@@ -99,11 +108,16 @@ app.put('/possession/:libelle', (req, res) => {
       possession.dateFin = dateFin;
     }
 
-    // Mettre à jour le fichier data.json
     fs.writeFile('./data.json', JSON.stringify(patrimoine, null, 2), (err) => {
       if (err) {
         console.error('Erreur lors de l\'écriture dans le fichier data.json:', err);
         return res.status(500).json({ error: 'Erreur lors de la mise à jour de la possession' });
+      }
+      // Update the possessionInstances array
+      const index = possessionInstances.findIndex(p => p.libelle === libelle);
+      if (index !== -1) {
+        possessionInstances[index].libelle = newLibelle;
+        possessionInstances[index].dateFin = dateFin;
       }
       res.json(possession);
     });
@@ -111,15 +125,12 @@ app.put('/possession/:libelle', (req, res) => {
     res.status(404).json({ error: 'Possession non trouvée' });
   }
 });
-
-// Route pour clôturer une possession (date de fin = date actuelle)
 app.put('/possession/:libelle/close', (req, res) => {
   const { libelle } = req.params;
   const possession = possessions.find(p => p.libelle === libelle);
   if (possession) {
     possession.dateFin = new Date().toISOString();
 
-    // Mettre à jour le fichier data.json
     fs.writeFile('./data.json', JSON.stringify(patrimoine, null, 2), (err) => {
       if (err) {
         console.error('Erreur lors de l\'écriture dans le fichier data.json:', err);
@@ -151,8 +162,8 @@ app.post('/patrimoine/evolution', (req, res) => {
 
   while (currentDate <= fin) {
     let valeurTotale = 0;
-    possessions.forEach(possession => {
-      valeurTotale += calculateValeurActuelle(possession, currentDate);
+    possessionInstances.forEach(possession => {
+      valeurTotale += possession.getValeur(currentDate);
     });
 
     evolution.push({

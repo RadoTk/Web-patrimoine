@@ -27,14 +27,14 @@ const HomePage = () => {
             text: "Gérez vos possessions, ajoutez, modifiez ou clôturez des biens facilement.",
             buttonText: "Voir Possessions",
             buttonVariant: "secondary",
-            href: "/possession"
+            href: "/possessions"
           },
           {
             title: "Ajouter une Possession",
             text: "Enregistrez de nouvelles possessions dans votre portefeuille pour une gestion complète.",
             buttonText: "Ajouter une Possession",
             buttonVariant: "success",
-            href: "/possession/create"
+            href: "/possessions/create"
           }
         ].map((card, index) => (
           <Col key={index} md={4} className="d-flex">

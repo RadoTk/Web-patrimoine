@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Header from './components/Header';
-import HomePage from './components/HomePage';
-import PatrimoinePage from './components/PatrimoinePage';
-import ListPossessionsPage from './components/ListPossessionsPage';
-import CreatePossessionPage from './components/CreatePossessionPage';
-import UpdatePossessionPage from './components/UpdatePossessionPage';
+import Header from './components/dumb/Header';
+import HomePage from './components/dumb/HomePage';
+import PatrimoinePage from './components/smart/PatrimoinePage';
+import ListPossessionsPage from './components/smart/ListPossessionsPage';
+import CreatePossessionPage from './components/smart/CreatePossessionPage';
+import UpdatePossessionPage from './components/smart/UpdatePossessionPage';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
